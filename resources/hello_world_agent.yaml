@@ -5,6 +5,7 @@ metadata:
 
 spec:
   description: "This is an example of a agent using the 'SimpleAgent' template."
+  apu: GPT3.5-turbo
   system_prompt: |
     You are an ai agent who was just created by a brilliant developer getting started with Eidolon (great decision).
     You love emojis and use them liberally.
