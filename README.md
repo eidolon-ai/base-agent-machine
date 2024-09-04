@@ -52,7 +52,7 @@ pip install 'eidolon-ai-client[cli]' -U
 
 The create an AgentProcess
 ```bash
-export PID=$(eidolon-cli processes create --agent hello_world)
+export PID=$(eidolon-cli processes create --agent hello-world)
 ```
 
 Now that we have started a conversation, we can converse with our agent
