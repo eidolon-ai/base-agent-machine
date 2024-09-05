@@ -3,6 +3,7 @@ FROM python:3.11-slim as builder
 RUN pip install poetry
 RUN poetry config virtualenvs.create false --local
 COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
 RUN poetry remove eidolon-ai-sdk
 COPY components/ components/
 COPY README.md README.md
