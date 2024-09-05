@@ -2,8 +2,9 @@ DOCKER_REPO_NAME := my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
 SDK_VERSION := $(shell awk '/^name = "eidolon-ai-sdk"$$/{f=1} f&&/^version = /{gsub(/"|,/,"",$$3); print $$3; exit}' poetry.lock)
 REQUIRED_ENVS := OPENAI_API_KEY
+MAKEFLAGS += -j2
 
-.PHONY: serve serve-dev check docker-serve .env sync update docker-build k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env
+.PHONY: serve serve-dev check docker-serve .env sync update docker-build pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env
 
 ARGS ?=
 
@@ -58,8 +59,12 @@ Dockerfile: pyproject.toml .make
 check-docker-daemon:
 	@docker info >/dev/null 2>&1 || (echo "🚨 Error: Docker daemon is not running\n🛟 For help installing or running docker, visit https://docs.docker.com/get-docker/" >&2 && exit 1)
 
-docker-serve: .env check-docker-daemon poetry.lock Dockerfile
+docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml docker-build pull-webui
 	docker compose up $(ARGS)
+
+docker-compose.yml: Makefile
+	@sed -e '/^  agent-server:/,/^  [^ ]/s/^    image: .*/    image: ${DOCKER_REPO_NAME}:latest/' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
+	@echo "Updated docker-compose.yml with image ${DOCKER_REPO_NAME}:latest"
 
 update:
 	poetry add eidolon-ai-sdk@latest
@@ -137,3 +142,8 @@ k8s-env: .env
 
 docker-build: poetry.lock Dockerfile
 	@docker build -t $(DOCKER_REPO_NAME):latest .
+
+pull-webui:
+	@if ! docker image inspect eidolonai/webui:latest > /dev/null 2>&1; then \
+		docker pull eidolonai/webui:latest; \
+	fi

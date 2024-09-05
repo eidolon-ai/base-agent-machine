@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-eidolon-ai-sdk = "^0.1.120"
+eidolon-ai-sdk = "^0.1.121"
 
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.24.0"

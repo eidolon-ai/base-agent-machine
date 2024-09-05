@@ -1,5 +1,6 @@
 services:
   agent-server:
+    image: my-eidolon-project:latest
     build:
       context: .
       dockerfile: Dockerfile
