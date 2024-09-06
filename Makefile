@@ -70,7 +70,6 @@ docker-compose.yml: Makefile
 
 update:
 	poetry add --lock eidolon-ai-sdk@latest
-	poetry lock --no-update
 	$(MAKE) Dockerfile
 
 sync:

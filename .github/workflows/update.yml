@@ -27,7 +27,9 @@ jobs:
           python-version: '3.11'
           cache: 'poetry'
       - name: "Updating Dependencies"
-        run: make update
+        run: |
+          make update
+          rm -f poetry.lock
       - id: git-diff
         run:
           git diff --quiet HEAD || echo "changes=true" >> $GITHUB_OUTPUT
