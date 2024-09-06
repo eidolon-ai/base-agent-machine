@@ -67,7 +67,7 @@ docker-compose.yml: Makefile
 	@echo "Updated docker-compose.yml with image ${DOCKER_REPO_NAME}:latest"
 
 update:
-	poetry add eidolon-ai-sdk@latest
+	poetry add --lock eidolon-ai-sdk@latest
 	poetry lock --no-update
 	$(MAKE) Dockerfile
 
