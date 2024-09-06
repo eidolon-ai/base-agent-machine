@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'poetry'
-#      - run: make .make/poetry_install
+      - run: make .make/poetry_install
       - run: |
           set +o pipefail
           yes TESTVALUE | make .env
