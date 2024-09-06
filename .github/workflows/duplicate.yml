@@ -1,7 +1,6 @@
 name: Duplicate Repository
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       destination_user:
