@@ -79,8 +79,11 @@ sync:
 		git remote add upstream https://github.com/eidolon-ai/agent-machine.git; \
 		echo "upstream added"; \
 	fi
-	git fetch upstream
-	git merge upstream/main --no-edit
+	git pull upstream main --no-edit --no-commit
+	poetry lock --no-update
+	$(MAKE) Dockerfile
+	git add .
+	git commit -am "Merge remote-tracking branch 'upstream/main'"
 
 k8s-operator: check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator
 	@echo "K8s environment is ready. You can now deploy your application."

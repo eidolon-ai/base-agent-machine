@@ -39,3 +39,27 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           git push https://$GH_TOKEN@github.com/${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}.git main
+
+      - name: Checkout new repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Update README.md
+        run: |
+          OLD_ORG=$(echo ${{ github.event.inputs.source_org_repo }} | cut -d '/' -f 1)
+          OLD_REPO=$(echo ${{ github.event.inputs.source_org_repo }} | cut -d '/' -f 2)
+          sed -i "s|$OLD_ORG|${{ github.event.inputs.destination_user }}|g" README.md
+          sed -i "s|$OLD_REPO|${{ github.event.inputs.destination_repo }}|g" README.md
+          make poetry.lock
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "autodupe@eidolonai.com"
+          git config --global user.name "autodupe"
+          git add README.md
+          git commit -m "Update README.md with new organization and repository name"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
