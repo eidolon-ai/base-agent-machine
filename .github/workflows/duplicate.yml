@@ -27,6 +27,8 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
       - name: Create new repository
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: gh repo create ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }} --${{ github.event.inputs.visibility }}
       - name: Push current branch to new repository as main
         run: git push "https://github.com/${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}.git" HEAD:main --force
