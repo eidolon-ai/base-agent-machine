@@ -2,9 +2,8 @@ DOCKER_REPO_NAME := my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
 SDK_VERSION := $(shell awk '/^name = "eidolon-ai-sdk"$$/{f=1} f&&/^version = /{gsub(/"|,/,"",$$3); print $$3; exit}' poetry.lock)
 REQUIRED_ENVS := OPENAI_API_KEY
-MAKEFLAGS += -j2
 
-.PHONY: serve serve-dev check docker-serve .env sync update docker-build pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env
+.PHONY: serve serve-dev check docker-serve _docker-serve .env sync update docker-build pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env
 
 ARGS ?=
 
@@ -59,7 +58,10 @@ Dockerfile: pyproject.toml .make
 check-docker-daemon:
 	@docker info >/dev/null 2>&1 || (echo "🚨 Error: Docker daemon is not running\n🛟 For help installing or running docker, visit https://docs.docker.com/get-docker/" >&2 && exit 1)
 
-docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml docker-build pull-webui
+docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml
+	$(MAKE) -j2 _docker-serve
+
+_docker-serve: docker-build pull-webui
 	docker compose up $(ARGS)
 
 docker-compose.yml: Makefile
