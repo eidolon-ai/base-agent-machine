@@ -73,10 +73,6 @@ update:
 	$(MAKE) Dockerfile
 
 sync:
-	@if ! git diff --quiet; then \
-        echo "🚨 Unstaged changes found. Please commit or stash them before running sync" >&2; \
-        exit 1; \
-    fi
 	@if git remote | grep -q upstream; then \
 		echo "upstream already exists"; \
 	else \
