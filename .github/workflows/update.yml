@@ -10,9 +10,9 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository == 'eidolon-ai/agent-machine'
     runs-on: ubuntu-latest
-
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-serial-run
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,26 +28,20 @@ jobs:
       - name: "Updating Dependencies"
         run: make update
       - id: git-diff
-        run: |
-          git stash -- poetry.lock Dockerfile
-          git diff --quiet HEAD || echo "changes=true" >> $GITHUB_OUTPUT
-          git stash pop
+        run: git diff --quiet || echo "changes=true" >> $GITHUB_OUTPUT
       - id: test
         if: steps.git-diff.outputs.changes == 'true'
         uses: ./.github/start-server
-      - run: |
-          rm -f poetry.lock
-          git checkout Dockerfile
       - name: Push Update
-        if: steps.test.outcome == 'success'
+        if: steps.test.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "bumping eidolon version"
 
   sync:
-    if: github.repository != 'eidolon-ai/agent-machine'
     runs-on: ubuntu-latest
-
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-serial-run
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,5 +61,5 @@ jobs:
         if: steps.git-diff.outputs.changes == 'true'
         uses: ./.github/start-server
       - name: Push Sync
-        if: steps.test.outcome == 'success'
+        if: steps.test.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
         run: git push
