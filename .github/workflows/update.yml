@@ -26,15 +26,18 @@ jobs:
           python-version: '3.11'
           cache: 'poetry'
       - name: "Updating Dependencies"
-        run: |
-          make update
-          rm -f poetry.lock
+        run: make update
       - id: git-diff
-        run:
+        run: |
+          git stash -- poetry.lock Dockerfile
           git diff --quiet HEAD || echo "changes=true" >> $GITHUB_OUTPUT
+          git stash pop
       - id: test
         if: steps.git-diff.outputs.changes == 'true'
         uses: ./.github/start-server
+      - run: |
+          rm -f poetry.lock
+          git checkout Dockerfile
       - name: Push Update
         if: steps.test.outcome == 'success'
         uses: stefanzweifel/git-auto-commit-action@v5
