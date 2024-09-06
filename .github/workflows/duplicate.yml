@@ -1,0 +1,41 @@
+name: Duplicate Repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      destination_user:
+        description: 'Destination user or organization'
+        required: true
+        default: 'eidolon-ai'
+      destination_repo:
+        description: 'Name of the new repository'
+        required: true
+      visibility:
+        description: 'Repository visibility (public or private)'
+        required: true
+        default: 'public'
+        type: choice
+        options:
+          - public
+          - private
+
+jobs:
+  duplicate_repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Create new repository
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh repo create ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }} --${{ github.event.inputs.visibility }}
+
+      - name: Push main branch to new repository
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          git push https://$GH_TOKEN@github.com/${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}.git main
