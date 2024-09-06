@@ -43,6 +43,7 @@ jobs:
           commit_message: "bumping eidolon version"
 
   sync:
+    if: github.repository != 'eidolon-ai/agent-machine'
     runs-on: ubuntu-latest
     permissions:
       contents: write

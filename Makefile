@@ -1,6 +1,6 @@
 DOCKER_REPO_NAME := my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
-SDK_VERSION := $(shell awk '/^name = "eidolon-ai-sdk"$$/{f=1} f&&/^version = /{gsub(/"|,/,"",$$3); print $$3; exit}' poetry.lock)
+SDK_VERSION := $(shell [ -f poetry.lock ] && awk '/^name = "eidolon-ai-sdk"$$/{f=1} f&&/^version = /{gsub(/"|,/,"",$$3); print $$3; exit}' poetry.lock || echo "latest")
 REQUIRED_ENVS := OPENAI_API_KEY
 
 .PHONY: serve serve-dev check docker-serve _docker-serve .env sync update docker-build pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env
@@ -73,6 +73,10 @@ update:
 	$(MAKE) Dockerfile
 
 sync:
+	@if ! git diff --quiet; then \
+        echo "🚨 Unstaged changes found. Please commit or stash them before running sync" >&2; \
+        exit 1; \
+    fi
 	@if git remote | grep -q upstream; then \
 		echo "upstream already exists"; \
 	else \
@@ -83,7 +87,7 @@ sync:
 	poetry lock --no-update
 	$(MAKE) Dockerfile
 	git add .
-	git commit -am "Merge remote-tracking branch 'upstream/main'"
+	git commit
 
 k8s-operator: check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator
 	@echo "K8s environment is ready. You can now deploy your application."
