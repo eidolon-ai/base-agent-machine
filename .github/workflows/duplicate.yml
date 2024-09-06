@@ -29,7 +29,7 @@ jobs:
       - name: Create new repository
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: gh repo create ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }} --${{ github.event.inputs.visibility }} --default-branch main
+        run: gh repo create ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }} --${{ github.event.inputs.visibility }}
       - name: Push to new repository
         run: |
           # Push all branches and tags to the new repository
