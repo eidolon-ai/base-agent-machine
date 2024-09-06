@@ -23,11 +23,9 @@ jobs:
   duplicate_repository:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
-
+          token: ${{ secrets.GH_PAT }}
       - name: Create new repository
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -35,13 +33,11 @@ jobs:
           gh repo create ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }} --${{ github.event.inputs.visibility }}
 
       - name: Push main branch to new repository
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          git push https://$GH_TOKEN@github.com/${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}.git main
+          git push https://github.com/${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}.git main
 
       - name: Checkout new repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ${{ github.event.inputs.destination_user }}/${{ github.event.inputs.destination_repo }}
           token: ${{ secrets.GH_PAT }}
@@ -61,5 +57,3 @@ jobs:
           git add README.md
           git commit -m "Update README.md with new organization and repository name"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

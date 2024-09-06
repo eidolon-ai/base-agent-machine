@@ -12,14 +12,13 @@ jobs:
   update:
     if: github.repository == 'eidolon-ai/agent-machine'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v5
@@ -45,14 +44,13 @@ jobs:
   sync:
     if: github.repository != 'eidolon-ai/agent-machine'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
       - name: Install poetry
         run: pipx install poetry
       - name: Syncing fork with upstream
