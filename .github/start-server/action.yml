@@ -15,7 +15,7 @@ runs:
       shell: bash
       run: |
         set +o pipefail
-        tail -f container_logs.txt | awk '/Server Started/ {exit 0} /Failed to start/ {exit 1} {print}'
+        tail -f container_logs.txt | awk '{print} /Server Started/ {exit 0} /Failed to start/ {exit 1}'
         set -o pipefail
     - name: check server is running
       shell: bash
