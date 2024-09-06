@@ -15,7 +15,7 @@ runs:
       shell: bash
       run: |
         set +o pipefail
-        docker compose logs -f | awk '/Server Started/ {exit 0} /Failed to start/ {exit 1} {print}'
+        docker compose logs -f | awk '/Server Started/ {exit 0} /Failed to start/ {exit 1} {print $0; fflush()}'
         set -o pipefail
     - name: check server is running
       shell: bash
