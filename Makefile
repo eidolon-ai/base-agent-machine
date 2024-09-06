@@ -47,7 +47,7 @@ test: .make/poetry_install .env
 	@touch .make/poetry_install
 
 poetry.lock: pyproject.toml
-	@poetry lock --no-update
+	poetry lock --no-update
 	@touch poetry.lock
 
 Dockerfile: pyproject.toml .make poetry.lock
