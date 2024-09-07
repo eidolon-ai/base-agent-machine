@@ -1,4 +1,4 @@
-name: Repository Setup
+name: Setup
 
 on:
   push:
@@ -6,9 +6,11 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -23,10 +25,13 @@ jobs:
             echo "Repository has more than one commit. Skipping setup."
             echo "is_fresh=false" >> $GITHUB_OUTPUT
           fi
+      - name: Install poetry
+        if: steps.check_fresh.outputs.is_fresh == 'true'
+        run: pipx install poetry
       - name: Example setup step
         if: steps.check_fresh.outputs.is_fresh == 'true'
         run: |
-          make .env Dockerfile
+          make poetry.lock Dockerfile
           rm -rf .github/workflows/setup.yml
           rm -rf .github/workflows/update.yml
           rm -rf .github/workflows/duplicate.yml
@@ -34,4 +39,4 @@ jobs:
         if: steps.check_fresh.outputs.is_fresh == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "template setup"
+          commit_message: "new repo setup"
