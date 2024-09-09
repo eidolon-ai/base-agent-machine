@@ -127,7 +127,7 @@ k8s-serve: k8s-server k8s-webui
 
 k8s-server: check-cluster-running docker-build k8s-env
 	@kubectl apply -f k8s/ephemeral_machine.yaml
-	@kubectl apply -f resources/
+	- @kubectl apply -f resources/
 	@kubectl apply -f k8s/eidolon-ext-service.yaml
 	@echo "Waiting for eidolon-deployment to be ready..."
 	@kubectl rollout status deployment/eidolon-deployment --timeout=60s
