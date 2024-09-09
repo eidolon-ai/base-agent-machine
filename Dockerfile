@@ -24,7 +24,6 @@ RUN pip install /tmp/agent-machine/*.whl  --no-cache --no-deps
 
 FROM agent-machine-base as agent-machine
 # Finally copy resources over since they will mutate most frequently
-COPY resources/ /app/resources/
 COPY metrics.json /app/metrics.json
 
 FROM agent-machine
@@ -36,4 +35,3 @@ USER eidolon
 EXPOSE 8080
 ENV PYTHONUNBUFFERED 1
 ENTRYPOINT ["eidolon-server"]
-CMD ["resources", "--fail-on-bad-agent", "true"]
