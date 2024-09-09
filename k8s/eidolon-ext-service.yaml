@@ -9,6 +9,6 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port:     8080   # Port exposed within the cluster
+    - port: 8080 # Port exposed within the cluster
   selector:
     app: eidolon
