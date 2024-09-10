@@ -1,7 +1,8 @@
 .DS_Store
-.idea/
+**/.idea/
 .make/
 .env
 *.iml
 container_logs.txt
 __pycache__/
+*.iml
