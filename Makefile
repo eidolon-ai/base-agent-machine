@@ -83,7 +83,7 @@ sync:
 	poetry lock --no-update
 	$(MAKE) Dockerfile
 	git add .
-	git commit
+	git commit -m "Sync with upstream"
 
 k8s-operator: check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator
 	@echo "K8s environment is ready. You can now deploy your application."
