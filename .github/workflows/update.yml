@@ -29,11 +29,14 @@ jobs:
         run: make update
       - id: git-diff
         run: git diff --quiet || echo "changes=true" >> $GITHUB_OUTPUT
-      - id: test
+      - id: test-start-server
         if: steps.git-diff.outputs.changes == 'true'
         uses: ./.github/start-server
+      - id: pytest
+        if: steps.git-diff.outputs.changes == 'true'
+        run: make test
       - name: Push Update
-        if: steps.test.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
+        if: steps.test-start-server.outcome == 'success' && steps.pytest.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "bumping eidolon version"
@@ -57,9 +60,12 @@ jobs:
           make sync
       - id: git-diff
         run: git diff --quiet origin/main || echo "changes=true" >> $GITHUB_OUTPUT
-      - id: test
+      - id: test-start-server
         if: steps.git-diff.outputs.changes == 'true'
         uses: ./.github/start-server
+      - id: pytest
+        if: steps.git-diff.outputs.changes == 'true'
+        run: make test
       - name: Push Sync
-        if: steps.test.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
+        if: steps.test-start-server.outcome == 'success' && steps.pytest.outcome == 'success' && github.repository != 'eidolon-ai/agent-machine'
         run: git push
