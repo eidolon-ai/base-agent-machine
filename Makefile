@@ -151,6 +151,3 @@ pull-webui:
 	@if ! docker image inspect eidolonai/webui:latest > /dev/null 2>&1; then \
 		docker pull eidolonai/webui:latest; \
 	fi
-
-test: .make/poetry_install
-	@poetry run pytest tests
