@@ -20,7 +20,9 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
       - name: Install poetry
-        run: pipx install poetry
+        run: |
+          pipx install poetry
+          make poetry.lock
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -52,7 +54,9 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
       - name: Install poetry
-        run: pipx install poetry
+        run: |
+          pipx install poetry
+          make poetry.lock
       - name: Syncing fork with upstream
         run: |
           git config --global user.email "autosync@eidolonai.com"
