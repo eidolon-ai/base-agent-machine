@@ -6,16 +6,16 @@ There are two make targets in the makefile, `k8s-operator` and `k8s-serve`.
 
 The `k8s-operator` target installs the Eidolon operator in your k8s cluster. This only needs to be done once. It is executing the following commands:
 
-* It first checks if helm and kubectl are installed
-* It then checks the permissions of the current user to see if they can install the operator by running `./verify_k8s`
-* If you are NOT using minikube locally set the environment variable `DOCKER_REPO_URL` to the proper location.
+* It first checks if `helm` and `kubectl` are installed.
+* It then checks the permissions of the current user to see if they can install the operator by running `./verify_k8s`.
+* If you are NOT using Minikube locally, set the environment variable `DOCKER_REPO_URL` to the proper location.
   * Linux/OSX: `export DOCKER_REPO_URL=<ip>:5000/my-eidolon-project`
-  * Windows (Powershell): `$env:DOCKER_REPO_URL="<ip>:5000/my-eidolon-project"`
-* It then checks if the operator is already installed, if not, it installs the operator by running
+  * Windows (PowerShell): `$env:DOCKER_REPO_URL="<ip>:5000/my-eidolon-project"`
+* It then checks if the operator is already installed. If not, it installs the operator by running:
   * `helm repo add eidolon https://eidolonai.com/charts`
   * `helm install eidolon eidolon/eidolon-operator-chart`
-* It does not try to update the operator. If you want to update the operator, you will need to run `helm upgrade eidolon eidolon/eidolon-operator-chart`
-* If you are using these then make sure to ignore the machine file to avoid checking in `git update-index --assume-unchanged k8s/ephemeral_machine.yaml`
+* It does not try to update the operator. If you want to update the operator, you will need to run `helm upgrade eidolon eidolon/eidolon-operator-chart`.
+* If you are not running locally, then make sure to ignore the machine file to avoid checking in by running `git update-index --assume-unchanged k8s/ephemeral_machine.yaml`.
 
 These command should work for either a local k8s environment or a cloud based k8s environment.
 
