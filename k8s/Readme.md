@@ -15,6 +15,7 @@ The `k8s-operator` target installs the Eidolon operator in your k8s cluster. Thi
   * `helm repo add eidolon https://eidolonai.com/charts`
   * `helm install eidolon eidolon/eidolon-operator-chart`
 * It does not try to update the operator. If you want to update the operator, you will need to run `helm upgrade eidolon eidolon/eidolon-operator-chart`
+* If you are using these then make sure to ignore the machine file to avoid checking in `git update-index --assume-unchanged k8s/ephemeral_machine.yaml`
 
 These command should work for either a local k8s environment or a cloud based k8s environment.
 
