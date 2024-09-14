@@ -1,8 +1,10 @@
-DOCKER_REPO_NAME := my-eidolon-project
+DOCKER_REPO_URL ?=
+DOCKER_REPO_NAME := $(if $(DOCKER_REPO_URL),$(DOCKER_REPO_URL),my-eidolon-project)
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
 REQUIRED_ENVS := OPENAI_API_KEY
+NAMESPACE ?= eidolon
 
-.PHONY: serve serve-dev check docker-serve _docker-serve .env sync update docker-build pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env test
+.PHONY: serve serve-dev check docker-serve _docker-serve .env sync update docker-build docker-push pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env test
 
 ARGS ?=
 
@@ -117,37 +119,54 @@ check-install-operator:
 k8s-serve: k8s-server k8s-webui
 	@echo "Press Ctrl+C to exit"
 	@echo "------------------------------------------------------------------"
-	@echo "Server is running at $$(./k8s/get_service_url.sh eidolon-ext-service)"
-	@echo "WebUI is running at $$(./k8s/get_service_url.sh eidolon-webui-service)"
+	@echo "Server is running at $$(./k8s/get_service_url.sh eidolon-ext-service --namespace=$(NAMESPACE))"
+	@echo "WebUI is running at $$(./k8s/get_service_url.sh eidolon-webui-service --namespace=$(NAMESPACE))"
 	@echo "------------------------------------------------------------------"
 	kubectl logs -f \
 		-l 'app in (eidolon, eidolon-webui)' \
 		--all-containers=true \
-		--prefix=true
+		--prefix=true \
+		--namespace=$(NAMESPACE)
 
-k8s-server: check-cluster-running docker-build k8s-env
-	@kubectl apply -f k8s/ephemeral_machine.yaml
-	- @kubectl apply -f resources/
-	@kubectl apply -f k8s/eidolon-ext-service.yaml
+k8s-server: check-cluster-running docker-build docker-push k8s-env
+	@sed -e 's|image: .*|image: ${DOCKER_REPO_NAME}:latest|' \
+		-e 's|imagePullPolicy: .*|imagePullPolicy: $(if $(DOCKER_REPO_URL),Always,Never)|' \
+		k8s/ephemeral_machine.yaml > k8s/ephemeral_machine.yaml.tmp && mv k8s/ephemeral_machine.yaml.tmp k8s/ephemeral_machine.yaml
+	@kubectl apply -f k8s/ephemeral_machine.yaml --namespace=$(NAMESPACE)
+	-@kubectl apply -f resources/ --namespace=$(NAMESPACE)
+	@kubectl apply -f k8s/eidolon-ext-service.yaml --namespace=$(NAMESPACE)
 	@echo "Waiting for eidolon-deployment to be ready..."
-	@kubectl rollout status deployment/eidolon-deployment --timeout=60s
+	@kubectl rollout status deployment/eidolon-deployment --timeout=60s --namespace=$(NAMESPACE)
 	@echo "Server Deployment is ready."
 
 k8s-webui:
-	@kubectl create configmap webui-apps-config --from-file=./webui.apps.json -o yaml --dry-run=client | kubectl apply -f -
-	@kubectl apply -f k8s/webui.yaml
+	@kubectl create configmap webui-apps-config --from-file=./webui.apps.json -o yaml --dry-run=client | kubectl apply -f - --namespace=$(NAMESPACE)
+	@kubectl apply -f k8s/webui.yaml --namespace=$(NAMESPACE)
 	@echo "Waiting for eidolon-webui to be ready..."
-	@kubectl rollout status deployment/eidolon-webui-deployment --timeout=60s
+	@kubectl rollout status deployment/eidolon-webui-deployment --timeout=60s --namespace=$(NAMESPACE)
 	@echo "WebUI Deployment is ready."
 
-k8s-env: .env
+# Add this target to create the namespace if it doesn't exist
+create-namespace:
+	@kubectl get namespace $(NAMESPACE) || kubectl create namespace $(NAMESPACE)
+
+# Update the k8s-env target to depend on create-namespace
+k8s-env: create-namespace .env
 	@if [ ! -f .env ]; then echo ".env file not found!"; exit 1; fi
-	@kubectl create secret generic eidolon --from-env-file=./.env --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl create secret generic eidolon --from-env-file=./.env --dry-run=client -o yaml | kubectl apply -f - --namespace=$(NAMESPACE)
 
 docker-build: poetry.lock Dockerfile
 	@docker build -t $(DOCKER_REPO_NAME):latest .
+
+docker-push:
+	@if [ -n "$(DOCKER_REPO_URL)" ]; then \
+		docker push $(DOCKER_REPO_NAME):latest; \
+	fi
 
 pull-webui:
 	@if ! docker image inspect eidolonai/webui:latest > /dev/null 2>&1; then \
 		docker pull eidolonai/webui:latest; \
 	fi
+
+k8s-clean:
+	@kubectl delete -f k8s/ephemeral_machine.yaml -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml
