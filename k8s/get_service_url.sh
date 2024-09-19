@@ -1,19 +1,20 @@
 #!/bin/bash
 
 # Check if a service name was provided
-if [ $# -eq 0 ]; then
+if [ $# -lt 1 ]; then
     echo "Error: Please provide a service name."
-    echo "Usage: $0 <service-name>"
+    echo "Usage: $0 <service-name> [namespace]"
     exit 1
 fi
 
 SERVICE_NAME="$1"
+NAMESPACE="${2:-eidolon}"
 
 # Get the Kubernetes context
 CONTEXT=$(kubectl config current-context)
 
 # Get the NodePort of the service
-NODE_PORT=$(kubectl get svc "$SERVICE_NAME" -o=jsonpath='{.spec.ports[0].nodePort}')
+NODE_PORT=$(kubectl get svc "$SERVICE_NAME" --namespace="$NAMESPACE" -o=jsonpath='{.spec.ports[0].nodePort}')
 
 # Check if NodePort is empty
 if [ -z "$NODE_PORT" ]; then
