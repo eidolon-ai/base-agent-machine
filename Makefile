@@ -1,5 +1,4 @@
-DOCKER_REPO_URL ?=
-DOCKER_REPO_NAME := $(if $(DOCKER_REPO_URL),$(DOCKER_REPO_URL),my-eidolon-project)
+DOCKER_REPO_NAME ?= my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
 REQUIRED_ENVS := OPENAI_API_KEY
 NAMESPACE ?= eidolon
