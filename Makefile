@@ -118,8 +118,8 @@ check-install-operator:
 k8s-serve: k8s-server k8s-webui
 	@echo "Press Ctrl+C to exit"
 	@echo "------------------------------------------------------------------"
-	@echo "Server is running at $$(./k8s/get_service_url.sh eidolon-ext-service --namespace=$(NAMESPACE))"
-	@echo "WebUI is running at $$(./k8s/get_service_url.sh eidolon-webui-service --namespace=$(NAMESPACE))"
+	@echo "Server is running at $$(./k8s/get_service_url.sh eidolon-ext-service $(NAMESPACE))"
+	@echo "WebUI is running at $$(./k8s/get_service_url.sh eidolon-webui-service $(NAMESPACE))"
 	@echo "------------------------------------------------------------------"
 	kubectl logs -f \
 		-l 'app in (eidolon, eidolon-webui)' \
@@ -168,4 +168,4 @@ pull-webui:
 	fi
 
 k8s-clean:
-	@kubectl delete -f k8s/ephemeral_machine.yaml -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml
+	@kubectl delete -f k8s/ephemeral_machine.yaml -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml -n $(NAMESPACE)
