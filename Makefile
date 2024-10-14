@@ -66,7 +66,7 @@ docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml
 _docker-serve: docker-build pull-webui
 	docker compose up $(ARGS)
 
-docker-compose.yml: makefile
+docker-compose.yml: Makefile
 	@sed -e '/^  agent-server:/,/^  [^ ]/s/^    image: .*/    image: ${DOCKER_REPO_NAME}:latest/' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 	@echo "Updated docker-compose.yml with image ${DOCKER_REPO_NAME}:latest"
 	@sed -e 's|image: eidolonai/webui:.*|image: eidolonai/webui:$(WEBUI_TAG)|' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
@@ -149,7 +149,7 @@ k8s-server: check-cluster-running docker-build docker-push k8s-env
 	@kubectl rollout status deployment/eidolon-deployment --timeout=60s --namespace=$(NAMESPACE)
 	@echo "Server Deployment is ready."
 
-k8s/webui.yaml: makefile
+k8s/webui.yaml: Makefile
 	@sed -e 's|image: docker.io/eidolonai/webui:.*|image: docker.io/eidolonai/webui:$(WEBUI_TAG)|' k8s/webui.yaml > k8s/webui.yaml.tmp && mv k8s/webui.yaml.tmp k8s/webui.yaml
 
 
