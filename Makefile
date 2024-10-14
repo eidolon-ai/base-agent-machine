@@ -1,5 +1,6 @@
 DOCKER_REPO_NAME ?= my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
+WEBUI_TAG := latest
 REQUIRED_ENVS := OPENAI_API_KEY
 NAMESPACE ?= eidolon
 
@@ -65,13 +66,23 @@ docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml
 _docker-serve: docker-build pull-webui
 	docker compose up $(ARGS)
 
-docker-compose.yml:
+docker-compose.yml: makefile
 	@sed -e '/^  agent-server:/,/^  [^ ]/s/^    image: .*/    image: ${DOCKER_REPO_NAME}:latest/' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 	@echo "Updated docker-compose.yml with image ${DOCKER_REPO_NAME}:latest"
+	@sed -e 's|image: eidolonai/webui:.*|image: eidolonai/webui:$(WEBUI_TAG)|' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
+	@echo "Updated docker-compose.yml with image eidolonai/webui:$(WEBUI_TAG)"
+	
+	
 
 update:
 	poetry add --lock eidolon-ai-sdk@latest
 	$(MAKE) Dockerfile
+
+	@new_version=$$(curl -s https://raw.githubusercontent.com/eidolon-ai/eidolon/refs/heads/main/webui/package.json | grep -o '"version": "[^"]*"' | cut -d'"' -f4); \
+	sed -e 's/^WEBUI_TAG := .*/WEBUI_TAG := '$$new_version'/' Makefile > Makefile.tmp && mv Makefile.tmp Makefile;
+	$(MAKE) docker-compose.yml
+	$(MAKE) k8s/webui.yaml
+
 
 sync:
 	@if git remote | grep -q upstream; then \
@@ -137,6 +148,11 @@ k8s-server: check-cluster-running docker-build docker-push k8s-env
 	@echo "Waiting for eidolon-deployment to be ready..."
 	@kubectl rollout status deployment/eidolon-deployment --timeout=60s --namespace=$(NAMESPACE)
 	@echo "Server Deployment is ready."
+
+k8s/webui.yaml: makefile
+	# update k8s/webui.yaml line "image: docker.io/eidolonai/webui:latest" with tag $(WEBUI_TAG)
+	@sed -e 's|image: docker.io/eidolonai/webui:.*|image: docker.io/eidolonai/webui:$(WEBUI_TAG)|' k8s/webui.yaml > k8s/webui.yaml.tmp && mv k8s/webui.yaml.tmp k8s/webui.yaml
+
 
 k8s-webui:
 	@kubectl create configmap webui-apps-config --from-file=./webui.apps.json -o yaml --dry-run=client | kubectl apply -f - --namespace=$(NAMESPACE)
