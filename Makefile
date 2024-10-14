@@ -150,11 +150,10 @@ k8s-server: check-cluster-running docker-build docker-push k8s-env
 	@echo "Server Deployment is ready."
 
 k8s/webui.yaml: makefile
-	# update k8s/webui.yaml line "image: docker.io/eidolonai/webui:latest" with tag $(WEBUI_TAG)
 	@sed -e 's|image: docker.io/eidolonai/webui:.*|image: docker.io/eidolonai/webui:$(WEBUI_TAG)|' k8s/webui.yaml > k8s/webui.yaml.tmp && mv k8s/webui.yaml.tmp k8s/webui.yaml
 
 
-k8s-webui:
+k8s-webui: k8s/webui.yaml
 	@kubectl create configmap webui-apps-config --from-file=./webui.apps.json -o yaml --dry-run=client | kubectl apply -f - --namespace=$(NAMESPACE)
 	@kubectl apply -f k8s/webui.yaml --namespace=$(NAMESPACE)
 	@echo "Waiting for eidolon-webui to be ready..."
