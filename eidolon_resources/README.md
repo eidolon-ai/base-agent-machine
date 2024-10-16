@@ -15,6 +15,6 @@ spec:
   system_prompt: "You are a friendly greeter who greets people by name while using emojis"
 ```
 
-You can add this to your machine by creating a new file in the `resources` directory. The file can be named anything you like, but should have a `.yaml` extension.
+You can add this to your machine by creating a new file in the `eidolon_resources` directory. The file can be named anything you like, but should have a `.yaml` extension.
 
 See the [Eidolon Documentation](https://www.eidolonai.com/) for more information on how to define agents and components.

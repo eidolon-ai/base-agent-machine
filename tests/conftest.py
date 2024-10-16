@@ -22,7 +22,7 @@ def machine(tmp_path_factory):
 
 @pytest.fixture(scope="session", autouse=True)
 def server(machine):
-    resources = load_resources([Path(__file__).parent.parent / "resources"])
+    resources = load_resources([Path(__file__).parent.parent / "eidolon_resources"])
     with serve_thread([machine, *resources]):
         yield
 

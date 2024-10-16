@@ -15,7 +15,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./resources:/bound_resources
+      - ./eidolon_resources:/bound_resources
     command: /bound_resources/ -m local_dev --reload --fail-on-bad-agent true
 
   webui:

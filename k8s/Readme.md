@@ -19,10 +19,10 @@ The `k8s-operator` target installs the Eidolon operator in your k8s cluster. Thi
 
 These command should work for either a local k8s environment or a cloud based k8s environment.
 
-The `k8s-serve` target builds the agent docker image and installs the Eidolon agent machine, and all other yaml files in the resources directory, in your k8s cluster.
+The `k8s-serve` target builds the agent docker image and installs the Eidolon agent machine, and all other yaml files in the `eidolon_resources` directory, in your k8s cluster.
 
 There are builtin assumptions that make local development easier but prevents remote development. Particularly, the scripts rely on the local image names and the image is not pushed
 to a remote repository. This is because the image is built and pushed to the local docker daemon and the k8s cluster is configured to use the local docker daemon.
 
-If you want to use a remote docker repository, you will need to modify the `resources/ephemeral_machine.yaml.yaml` file to use a remote image name, 
+If you want to use a remote docker repository, you will need to modify the `eidolon_resources/ephemeral_machine.yaml.yaml` file to use a remote image name, 
 and you will need to push the image to the remote repository when building the docker image. You may also need to adjust the ImagePullPolicy from its default value of `IfNotPresent` to `Always`.

@@ -10,11 +10,11 @@ ARGS ?=
 
 serve-dev: .make/poetry_install .env
 	@echo "Starting Server..."
-	@poetry run eidolon-server -m local_dev resources --dotenv .env $(ARGS)
+	@poetry run eidolon-server -m local_dev eidolon_resources --dotenv .env $(ARGS)
 
 serve: .make/poetry_install .env
 	@echo "Starting Server..."
-	@poetry run eidolon-server resources --dotenv .env $(ARGS)
+	@poetry run eidolon-server eidolon_resources --dotenv .env $(ARGS)
 
 test: .make/poetry_install .env
 	@poetry run pytest tests $(ARGS)
@@ -143,7 +143,7 @@ k8s-server: check-cluster-running docker-build docker-push k8s-env
 		-e 's|imagePullPolicy: .*|imagePullPolicy: $(if $(DOCKER_REPO_URL),Always,Never)|' \
 		k8s/ephemeral_machine.yaml > k8s/ephemeral_machine.yaml.tmp && mv k8s/ephemeral_machine.yaml.tmp k8s/ephemeral_machine.yaml
 	@kubectl apply -f k8s/ephemeral_machine.yaml --namespace=$(NAMESPACE)
-	-@kubectl apply -f resources/ --namespace=$(NAMESPACE)
+	-@kubectl apply -f eidolon_resources/ --namespace=$(NAMESPACE)
 	@kubectl apply -f k8s/eidolon-ext-service.yaml --namespace=$(NAMESPACE)
 	@echo "Waiting for eidolon-deployment to be ready..."
 	@kubectl rollout status deployment/eidolon-deployment --timeout=60s --namespace=$(NAMESPACE)
@@ -183,4 +183,4 @@ pull-webui:
 	fi
 
 k8s-clean:
-	@kubectl delete -f k8s/ephemeral_machine.yaml -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml -n $(NAMESPACE)
+	@kubectl delete -f k8s/ephemeral_machine.yaml -f eidolon_resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml -n $(NAMESPACE)
