@@ -1,6 +1,6 @@
 services:
   agent-server:
-    image: my-eidolon-project:latest
+    image: github-assistant-agent-server:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,10 +16,13 @@ services:
       - .env
     volumes:
       - ./resources:/bound_resources
-    command: /bound_resources/ -m local_dev --reload --fail-on-bad-agent true
+      - eidolon_data:/data/eidolon/files
+    command: /bound_resources/ -m sample-machine --reload --fail-on-bad-agent true
+    depends_on:
+      - mongo
 
   webui:
-    image: eidolonai/webui:latest
+    image: eidolonai/webui:1.0.67
     environment:
       - NEXTAUTH_SECRET=secret
       - EIDOLON_SERVER=http://agent-server:8080
@@ -30,3 +33,24 @@ services:
       - "3000:3000"
     depends_on:
       - agent-server
+
+  mongo:
+    image: mongo
+    command:
+      - --dbpath
+      - /data/db
+      - --logpath
+      - /dev/null
+    volumes:
+      - mongodb_data:/data/db
+
+  chroma:
+    image: chromadb/chroma
+    volumes:
+      - chromadb_data:/chromadb/data
+
+
+volumes:
+  mongodb_data:
+  eidolon_data:
+  chromadb_data:
