@@ -2,9 +2,9 @@ DOCKER_REPO_NAME ?= my-eidolon-project
 VERSION := $(shell grep -m 1 '^version = ' pyproject.toml | awk -F '"' '{print $$2}')
 WEBUI_TAG := latest
 REQUIRED_ENVS := OPENAI_API_KEY
-NAMESPACE ?= eidolon
+NAMESPACE ?= default
 
-.PHONY: docker-serve _docker-serve .env sync update docker-build docker-push pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env test
+.PHONY: docker-serve _docker-serve .env sync update docker-build docker-push pull-webui k8s-operator check-kubectl check-helm check-cluster-running verify-k8s-permissions check-install-operator k8s-serve k8s-env k8s-mongo k8s-chroma test
 
 ARGS ?=
 
@@ -122,6 +122,7 @@ check-install-operator:
 		echo "Eidolon operator is already installed."; \
 	fi
 
+
 k8s-serve: k8s-server k8s-webui
 	@echo "Press Ctrl+C to exit"
 	@echo "------------------------------------------------------------------"
@@ -140,12 +141,25 @@ resources/machine.eidolon.yaml: Makefile
 		resources/machine.eidolon.yaml > resources/machine.eidolon.yaml.tmp && mv resources/machine.eidolon.yaml.tmp resources/machine.eidolon.yaml
 
 
-k8s-server: check-cluster-running docker-build docker-push k8s-env resources/machine.eidolon.yaml
+k8s-server: check-cluster-running docker-push k8s-env resources/machine.eidolon.yaml k8s-mongo k8s-chroma
 	@kubectl apply -f resources/ --namespace=$(NAMESPACE)
 	@kubectl apply -f k8s/eidolon-ext-service.yaml --namespace=$(NAMESPACE)
 	@echo "Waiting for eidolon-deployment to be ready..."
 	@kubectl rollout status deployment/eidolon-deployment --timeout=60s --namespace=$(NAMESPACE)
 	@echo "Server Deployment is ready."
+
+k8s-mongo:
+	@kubectl apply -f k8s/mongo.yaml --namespace=$(NAMESPACE)
+	@echo "Waiting for mongo to be ready..."
+	@kubectl wait --for=condition=ready pod -l app=mongodb --timeout=60s --namespace=$(NAMESPACE)
+	@echo "Mongo Deployment is ready."
+
+k8s-chroma:
+	@kubectl apply -f k8s/chroma.yaml --namespace=$(NAMESPACE)
+	@echo "Waiting for chroma to be ready..."
+	@kubectl wait --for=condition=ready pod -l app=chromadb --timeout=60s --namespace=$(NAMESPACE)
+	@kubectl rollout status deployment/chromadb --timeout=60s --namespace=$(NAMESPACE)
+	@echo "Chroma Deployment is ready."
 
 k8s/webui.yaml: Makefile
 	@sed -e 's|image: docker.io/eidolonai/webui:.*|image: docker.io/eidolonai/webui:$(WEBUI_TAG)|' k8s/webui.yaml > k8s/webui.yaml.tmp && mv k8s/webui.yaml.tmp k8s/webui.yaml
@@ -170,7 +184,7 @@ k8s-env: create-namespace .env
 docker-build: poetry.lock Dockerfile
 	@docker build -t $(DOCKER_REPO_NAME):latest .
 
-docker-push:
+docker-push: docker-build
 	@if [ -n "$(DOCKER_REPO_URL)" ]; then \
 		docker push $(DOCKER_REPO_NAME):latest; \
 	fi
@@ -193,4 +207,4 @@ pull-chroma:
 	fi
 
 k8s-clean:
-	@kubectl delete -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml -n $(NAMESPACE)
+	@kubectl delete -f resources/ -f k8s/eidolon-ext-service.yaml -f k8s/webui.yaml -f k8s/mongo.yaml -f k8s/chroma.yaml -n $(NAMESPACE)

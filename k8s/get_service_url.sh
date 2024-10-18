@@ -32,5 +32,6 @@ else
     IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
 fi
 
-# Print the URL
+# Ensure we only use the IPv4 address if multiple IPs are returned
+IP=$(echo "$IP" | awk -F' ' '{print $1}')
 echo "http://$IP:$NODE_PORT"
