@@ -1,6 +1,6 @@
 services:
   agent-server:
-    image: github-assistant-agent-server:latest
+    image: my-eidolon-project:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,7 +22,7 @@ services:
       - mongo
 
   webui:
-    image: eidolonai/webui:1.0.67
+    image: eidolonai/webui:latest
     environment:
       - NEXTAUTH_SECRET=secret
       - EIDOLON_SERVER=http://agent-server:8080
@@ -46,6 +46,8 @@ services:
 
   chroma:
     image: chromadb/chroma
+    environment:
+      - CHROME_USER_DATA_DIR=/chromadb/data
     volumes:
       - chromadb_data:/chromadb/data
 
