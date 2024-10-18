@@ -17,8 +17,13 @@ spec:
   # We are persisting to a mongo database
   symbolic_memory:
     implementation: MongoSymbolicMemory
-    mongo_database_name: "eidolon-github-assistant"
+    mongo_database_name: "agent-machine"
     mongo_connection_string: "mongodb://mongo:27017/?directConnection=true"
+  similarity_memory:
+    implementation: SimilarityMemoryImpl
+    vector_store:
+      implementation: ChromaVectorStore
+      url: http://chromadb:8000
   file_memory:
     implementation: LocalFileMemory
     root_dir: "/data/eidolon/files"

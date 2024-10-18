@@ -28,9 +28,8 @@ COPY metrics.json /app/metrics.json
 
 FROM agent-machine
 WORKDIR /app
-RUN addgroup --system --gid 1001 eidolon
-RUN adduser --system --uid 1001 eidolon
-
+RUN addgroup --system --gid 1001 eidolon && adduser --system --uid 1001 --ingroup eidolon eidolon
+RUN mkdir -p /data/eidolon/files && chown -R eidolon:eidolon /data/eidolon
 USER eidolon
 EXPOSE 8080
 ENV PYTHONUNBUFFERED 1

@@ -58,6 +58,10 @@ docker-serve: .env check-docker-daemon poetry.lock Dockerfile docker-compose.yml
 _docker-serve: docker-build pull-webui pull-mongo pull-chroma
 	docker compose up $(ARGS)
 
+docker-clean:
+	docker compose down -v
+
+
 docker-compose.yml: Makefile
 	@sed -e '/^  agent-server:/,/^  [^ ]/s/^    image: .*/    image: ${DOCKER_REPO_NAME}:latest/' docker-compose.yml > docker-compose.yml.tmp && mv docker-compose.yml.tmp docker-compose.yml
 	@echo "Updated docker-compose.yml with image ${DOCKER_REPO_NAME}:latest"

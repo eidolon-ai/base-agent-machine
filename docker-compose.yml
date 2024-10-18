@@ -20,6 +20,7 @@ services:
     command: /bound_resources/ -m sample-machine --reload --fail-on-bad-agent true
     depends_on:
       - mongo
+      - chromadb
 
   webui:
     image: eidolonai/webui:latest
@@ -44,7 +45,7 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  chroma:
+  chromadb:
     image: chromadb/chroma
     environment:
       - CHROME_USER_DATA_DIR=/chromadb/data
