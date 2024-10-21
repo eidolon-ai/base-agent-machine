@@ -12,6 +12,12 @@ spec:
   envFrom:
     - secretRef:
         name: eidolon
+  additionalVolumeMounts:
+    - name: eidolon-data
+      mountPath: /data/eidolon/files
+  additionalVolumes:
+    - name: eidolon-data
+      emptyDir: { }
   ### </k8s only> ###
 
   # We are persisting to a mongo database
@@ -24,6 +30,8 @@ spec:
     vector_store:
       implementation: ChromaVectorStore
       url: http://chromadb:8000
+  # Local dev uses volume mount. Production deployments will use alternative File Memory (ie, S3, Azure Blob Storage, etc)
+  # See https://www.eidolonai.com/docs/components/filememory/overview for alternatives
   file_memory:
     implementation: LocalFileMemory
     root_dir: "/data/eidolon/files"
